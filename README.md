@@ -10,6 +10,6 @@
 ![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/test.png)
 具体使用见demo吧！
 ##联系交流：
-[![Join the chat at http://www.cnblogs.com/qiyer/](https://github.com/qiyer/UUDatePicker_Demo/blob/master/博客园.png)](http://www.cnblogs.com/qiyer/)
+[![Join the chat at http://www.cnblogs.com/qiyer/](https://github.com/qiyer/UUDatePicker_Demo/blob/master/博客园.png)](http://www.cnblogs.com/qiyer/)[![Join the chat at http://bbs.9ria.com/space-uid-106435.html](https://github.com/qiyer/UUDatePicker_Demo/blob/master/天地会.png)](http://bbs.9ria.com/space-uid-106435.html)
 
     感兴趣的可以加下QQ群：219926126
