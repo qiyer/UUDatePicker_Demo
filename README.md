@@ -10,5 +10,5 @@
 ![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/test.png)
 具体使用见demo吧！
 ##联系交流：
-[![Join the chat at https://gitter.im/shenAlexy/MVVM](https://badges.gitter.im/shenAlexy/MVVM.svg)](https://gitter.im/shenAlexy/MVVM?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Join the chat at http://www.cnblogs.com/qiyer/](https://github.com/qiyer/UUDatePicker_Demo/blob/master/博客园.png)](http://www.cnblogs.com/qiyer/)
 感兴趣的可以加下QQ群：219926126
