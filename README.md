@@ -14,8 +14,12 @@
 ![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/效果图.png)
 
 ##项目中效果:
-![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4619.PNG)
+![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4619.PNG?imageView/2/w/619/q/90)
+
+
 ![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4620.PNG)
+
+
 ![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4621.PNG)
 
 ##联系交流：
