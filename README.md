@@ -14,8 +14,7 @@
 ![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/效果图.png)
 
 ##项目中效果:
-![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4619.PNG?imageView/2/w/619/q/90)
-
+ <img src="https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4619.PNG" width = "375" height = "600" alt="图片名称" align=center />
 
 ![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4620.PNG)
 
