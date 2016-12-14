@@ -2,8 +2,8 @@
 //  UUDatePicker.m
 //  1111
 //
-//  Created by qiye on 16/5/9.
-//  Copyright © 2016年 qiye. All rights reserved.
+//  Created by shake on 14-7-24.
+//  Copyright (c) 2014年 uyiuyao. All rights reserved.
 //
 
 #import "UUDatePicker.h"
@@ -125,8 +125,15 @@
         NSString *num = [NSString stringWithFormat:@"%d",i];
         [yearArray addObject:num];
     }
-    
-    timePeriodArray = [NSMutableArray arrayWithObjects:@"7:30-8:30",@"8:30-9:30",@"9:30-10:30",@"10:30-11:30",@"12:30-13:30",@"13:30-14:30",@"14:30-15:30",@"15:30-16:30", nil];
+    if (!self.isAccompany) {
+        timePeriodArray = [NSMutableArray arrayWithObjects:@"07:30-08:30",@"08:30-09:30",@"09:30-10:30",@"10:30-11:30",@"12:30-13:30",@"13:30-14:30",@"14:30-15:30",@"15:30-16:30", nil];
+    }else{
+        
+        timePeriodArray = [NSMutableArray arrayWithObjects:@"07:00",@"07:30",@"08:00",@"08:30",@"09:00",@"09:30",@"10:00",@"10:30",@"11:00",@"11:30",@"12:00",@"12:30",@"13:00",@"13:30",@"14:00",@"14:30",@"15:00",@"15:30",@"16:00",@"16:30",@"17:00",@"17:30",@"18:00", nil];
+    }
+    if(_isChildren){
+        timePeriodArray = [NSMutableArray arrayWithObjects:@"16:30-17:30",@"17:30-18:30",@"18:30-19:30",@"19:30-20:30",@"20:30-21:30",@"21:30-22:30",@"22:30-23:30",nil];
+    }
     
     //最大最小限制
     if (self.maxLimitDate) {
@@ -137,6 +144,9 @@
     }
     //最小限制
     if (self.minLimitDate) {
+        if(self.datePickerStyle == UUDateStyle_TimeQuantum){
+            self.minLimitDate = [[NSDate date]dateByAddingTimeInterval:0];
+        }
         minDateModel = [[UUDatePicker_DateModel alloc]initWithDate:self.minLimitDate];
     }else{
         self.minLimitDate = [self dateFromString:@"197001010000" withFormat:@"yyyyMMddHHmm"];
@@ -146,21 +156,68 @@
     //获取当前日期，储存当前时间位置
     NSArray *indexArray = [self getNowDate:self.ScrollToDate];
     
-    if (!myPickerView) {
-        myPickerView = [[UIPickerView alloc]initWithFrame:CGRectMake(0, 0, [[UIScreen mainScreen] bounds].size.width, self.frame.size.height)];
-        myPickerView.showsSelectionIndicator = YES;
-        myPickerView.backgroundColor = [UIColor clearColor];
-        myPickerView.delegate = self;
-        myPickerView.dataSource = self;
-        [self addSubview:myPickerView];
+    if(self.datePickerStyle == UUDateStyle_TimeQuantum&&minDateModel.hour.intValue >= 15){
+        NSNumber* year_ = indexArray[0];
+        NSNumber* month_ = indexArray[1];
+        NSNumber* day_ = indexArray[2];
+
+        NSDate *date = [self dateFromString:[NSString stringWithFormat:@"%@%@%@%@%@",yearArray[year_.intValue],monthArray[month_.intValue],dayArray[day_.intValue],hourArray[0],minuteArray[0]] withFormat:@"yyyyMMddHHmm"];
+        self.minLimitDate = date;
+        minDateModel = [[UUDatePicker_DateModel alloc]initWithDate:self.minLimitDate];
     }
+
+    BOOL isAgain = NO;
+    if (myPickerView) {
+        [myPickerView removeFromSuperview];
+        myPickerView = nil;
+        isAgain = YES;
+    }
+    myPickerView = [[UIPickerView alloc]initWithFrame:CGRectMake(0, 0, [[UIScreen mainScreen] bounds].size.width, self.frame.size.height)];
+    myPickerView.showsSelectionIndicator = YES;
+    myPickerView.backgroundColor = [UIColor clearColor];
+    myPickerView.delegate = self;
+    myPickerView.dataSource = self;
+    [self addSubview:myPickerView];
+    
     //调整为现在的时间
     for (int i=0; i<indexArray.count; i++) {
         [myPickerView selectRow:[indexArray[i] integerValue] inComponent:i animated:NO];
     }
     [self playTheDelegate];
+    
+    UIButton * cancelButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    cancelButton.frame = CGRectMake(0, 0, 60, 40);
+    [cancelButton setTitle:@"取消" forState:UIControlStateNormal];
+    [cancelButton.titleLabel setFont:[UIFont boldSystemFontOfSize:16]];
+    [self addSubview:cancelButton];
+    [cancelButton addTarget:self action:@selector(buttonCancel:) forControlEvents:UIControlEventTouchUpInside];
+    UIButton * sureButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    sureButton.frame = CGRectMake([[UIScreen mainScreen] bounds].size.width - 60, 0, 60, 40);
+    [sureButton setTitle:@"确定" forState:UIControlStateNormal];
+    [sureButton.titleLabel setFont:[UIFont boldSystemFontOfSize:16]];
+    [self addSubview:sureButton];
+    [sureButton addTarget:self action:@selector(buttonSure:) forControlEvents:UIControlEventTouchUpInside];
 }
 #pragma mark - 调整颜色
+
+-(void)buttonCancel:(id)sender
+{
+    if (self.finishBlock) {
+        self.finishBlock(@"",@"",@"",@"",@"",@"");
+    }
+    if (_sheet) {
+        [_sheet dissmiss];
+    }
+//     [self removeFromSuperview];
+}
+
+-(void)buttonSure:(id)sender
+{
+    if (_sheet) {
+        [_sheet dissmiss];
+    }
+//     [self removeFromSuperview];
+}
 
 //获取当前时间解析及位置
 - (NSArray *)getNowDate:(NSDate *)date
@@ -197,42 +254,170 @@
         return @[month,day,hour,minute];
     if (self.datePickerStyle == UUDateStyle_HourMinute)
         return @[hour,minute];
-    if (self.datePickerStyle == UUDateStyle_TimeQuantum){
-        if (model.hour.intValue > 16||(model.hour.intValue == 16&&model.minute.intValue>1)) {
-            dateShow = [[NSDate date]dateByAddingTimeInterval:60*60*12];
+    if (self.datePickerStyle == UUDateStyle_TimeQuantum&&_isAccompany){
+        if (model.hour.intValue > 17||(model.hour.intValue == 17&&model.minute.intValue>30)) {
+            dateShow = [[NSDate date]dateByAddingTimeInterval:60*60*24];
             UUDatePicker_DateModel *model = [[UUDatePicker_DateModel alloc]initWithDate:dateShow];
             [self DaysfromYear:[model.year integerValue] andMonth:[model.month integerValue]];
             yearIndex = [model.year intValue]-UUPICKER_MINDATE;
             monthIndex = [model.month intValue]-1;
             dayIndex = [model.day intValue]-1;
+            
             year   = [NSNumber numberWithInteger:yearIndex];
             month  = [NSNumber numberWithInteger:monthIndex];
             day    = [NSNumber numberWithInteger:dayIndex];
+            
             isPeriodMore = YES;
             
         }else{
-            isPeriodMore = NO;
-            if(model.hour.intValue<8){
+            
+            if(model.hour.intValue<6||(model.hour.intValue==6&&model.minute.intValue<31)){
                 periodIndex = 0;
-            }else if(model.hour.intValue<9){
+            }else if(model.hour.intValue<7){
                 periodIndex = 1;
-            }else if(model.hour.intValue<10){
+            }else if(model.hour.intValue==7&&model.minute.intValue<30){
                 periodIndex = 2;
-            }else if(model.hour.intValue<11){
+            }else if(model.hour.intValue<8){
                 periodIndex = 3;
-            }else if(model.hour.intValue<13){
+            }else if(model.hour.intValue==8&&model.minute.intValue<30){
                 periodIndex = 4;
-            }else if(model.hour.intValue<14){
+            }else if(model.hour.intValue<9){
                 periodIndex = 5;
-            }else if(model.hour.intValue<15){
+            }else if(model.hour.intValue==9&&model.minute.intValue<30){
                 periodIndex = 6;
-            }else if(model.hour.intValue<16){
+            }else if(model.hour.intValue<10){
                 periodIndex = 7;
+            }else if(model.hour.intValue==10&&model.minute.intValue<30){
+                periodIndex = 8;
+            }else if(model.hour.intValue<11){
+                periodIndex = 9;
+            }else if(model.hour.intValue==11&&model.minute.intValue<30){
+                periodIndex = 10;
+            }else if(model.hour.intValue<12){
+                periodIndex = 11;
+            }else if(model.hour.intValue==12&&model.minute.intValue<30){
+                periodIndex = 12;
+            }else if(model.hour.intValue<13){
+                periodIndex = 13;
+            }else if(model.hour.intValue==13&&model.minute.intValue<30){
+                periodIndex = 14;
+            }else if(model.hour.intValue<14){
+                periodIndex = 15;
+            }else if(model.hour.intValue==14&&model.minute.intValue<30){
+                periodIndex = 16;
+            }else if(model.hour.intValue<15){
+                periodIndex = 17;
+            }else if(model.hour.intValue==15&&model.minute.intValue<30){
+                periodIndex = 18;
+            }else if(model.hour.intValue<16){
+                periodIndex = 19;
+            }else if(model.hour.intValue==16&&model.minute.intValue<30){
+                periodIndex = 20;
+            }else if(model.hour.intValue<17){
+                periodIndex = 21;
+            }else if(model.hour.intValue==17&&model.minute.intValue<30){
+                periodIndex = 22;
             }
+
+            
             period    = [NSNumber numberWithInteger:periodIndex];
             curPeriodIndex = periodIndex;
+            
+            isPeriodMore = NO;
+            
         }
         return @[year,month,day,period];
+    }
+    if (self.datePickerStyle == UUDateStyle_TimeQuantum&&_isChildren){
+        if (model.hour.intValue > 22) {
+            dateShow = [[NSDate date]dateByAddingTimeInterval:60*60*24];
+            UUDatePicker_DateModel *model = [[UUDatePicker_DateModel alloc]initWithDate:dateShow];
+            [self DaysfromYear:[model.year integerValue] andMonth:[model.month integerValue]];
+            yearIndex = [model.year intValue]-UUPICKER_MINDATE;
+            monthIndex = [model.month intValue]-1;
+            dayIndex = [model.day intValue]-1;
+            
+            year   = [NSNumber numberWithInteger:yearIndex];
+            month  = [NSNumber numberWithInteger:monthIndex];
+            day    = [NSNumber numberWithInteger:dayIndex];
+            
+            isPeriodMore = YES;
+            
+        }else{
+            
+            if(model.hour.intValue<16){
+                periodIndex = 0;
+            }else if(model.hour.intValue<17){
+                periodIndex = 1;
+            }else if(model.hour.intValue<18){
+                periodIndex = 2;
+            }else if(model.hour.intValue<19){
+                periodIndex = 3;
+            }else if(model.hour.intValue<20){
+                periodIndex = 4;
+            }else if(model.hour.intValue<21){
+                periodIndex = 5;
+            }else if(model.hour.intValue<22){
+                periodIndex = 6;
+            }else if(model.hour.intValue<23){
+                periodIndex = 7;
+            }
+            
+            
+            period    = [NSNumber numberWithInteger:periodIndex];
+            curPeriodIndex = periodIndex;
+            
+            isPeriodMore = NO;
+            
+        }
+        return @[year,month,day,period];
+    }
+    if (self.datePickerStyle == UUDateStyle_TimeQuantum){
+        if (model.hour.intValue > 15||(model.hour.intValue == 15&&model.minute.intValue>1)) {
+            dateShow = [[NSDate date]dateByAddingTimeInterval:60*60*24];
+            UUDatePicker_DateModel *model = [[UUDatePicker_DateModel alloc]initWithDate:dateShow];
+            [self DaysfromYear:[model.year integerValue] andMonth:[model.month integerValue]];
+            yearIndex = [model.year intValue]-UUPICKER_MINDATE;
+            monthIndex = [model.month intValue]-1;
+            dayIndex = [model.day intValue]-1;
+            
+            year   = [NSNumber numberWithInteger:yearIndex];
+            month  = [NSNumber numberWithInteger:monthIndex];
+            day    = [NSNumber numberWithInteger:dayIndex];
+            
+            isPeriodMore = YES;
+            
+        }else{
+            
+            if(model.hour.intValue<7){
+                periodIndex = 0;
+            }else if(model.hour.intValue<8){
+                periodIndex = 1;
+            }else if(model.hour.intValue<9){
+                periodIndex = 2;
+            }else if(model.hour.intValue<10){
+                periodIndex = 3;
+            }else if(model.hour.intValue<12){
+                periodIndex = 4;
+            }else if(model.hour.intValue<13){
+                periodIndex = 5;
+            }else if(model.hour.intValue<14){
+                periodIndex = 6;
+            }else if(model.hour.intValue<15){
+                periodIndex = 7;
+            }
+            
+            
+            period    = [NSNumber numberWithInteger:periodIndex];
+            curPeriodIndex = periodIndex;
+            
+            isPeriodMore = NO;
+            
+        }
+        return @[year,month,day,period];
+    }
+    if (self.datePickerStyle == UUDateStyle_TimeQuantum){
+
     }
     return nil;
 }
@@ -271,8 +456,6 @@
     NSString * x6 = [NSString stringWithFormat:@"%.1f",width*0.42];
     NSString * x7 = [NSString stringWithFormat:@"%.1f",width*0.57];
     NSString * x8 = [NSString stringWithFormat:@"%.1f",width*0.83];
-    NSString * x9 = [NSString stringWithFormat:@"%.1f",width*0.48];
-    NSString * x10 = [NSString stringWithFormat:@"%.1f",width*0.65];
     
     if (self.datePickerStyle == UUDateStyle_YearMonthDayHourMinute){
         if (isIOS7) {
@@ -291,7 +474,7 @@
     }
     if (self.datePickerStyle == UUDateStyle_MonthDayHourMinute){
         if (isIOS7) {
-        [self creatValuePointXs:@[x1,x9,x10,x5]
+        [self creatValuePointXs:@[@"90",@"160",@"230",@"285"]
                       withNames:@[@"月",@"日",@"时",@"分"]];
             }
         return 4;
@@ -353,7 +536,8 @@
         if (component == 2) {
             return [self DaysfromYear:[yearArray[yearIndex] integerValue] andMonth:[monthArray[monthIndex] integerValue]];
         }
-        if (component == 3) return UUPICKER_PERIOD;
+//        if (component == 3) return UUPICKER_PERIOD;
+        if (component == 3) return timePeriodArray.count;
     }
     return 0;
 }
@@ -523,8 +707,11 @@
                 if (dayArray.count-1<dayIndex) {
                     dayIndex = dayArray.count-1;
                 }
+                if ([pickerView selectedRowInComponent:2] != dayIndex) {
+                    [pickerView selectRow:dayIndex inComponent:2 animated:NO];
+                }
                 //                [pickerView reloadComponent:2];
-                
+                NSLog(@"XXXXXXX:%ld  ,%ld , %ld",(long)yearIndex ,(long)monthIndex,(long)dayIndex);
             }
             
         }
@@ -680,6 +867,7 @@
 #pragma mark - 代理回调方法
 - (void)playTheDelegate
 {
+    if(hourIndex<0) hourIndex = 0;
     NSDate *date = [self dateFromString:[NSString stringWithFormat:@"%@%@%@%@%@",yearArray[yearIndex],monthArray[monthIndex],dayArray[dayIndex],hourArray[hourIndex],minuteArray[minuteIndex]] withFormat:@"yyyyMMddHHmm"];
     if ([date compare:self.minLimitDate] == NSOrderedAscending) {
         NSArray *array = [self getNowDate:self.minLimitDate];
@@ -692,13 +880,54 @@
             [myPickerView selectRow:[array[i] integerValue] inComponent:i animated:YES];
         }
     }
-    NSString *strWeek =[Utils formateStrToWeek:[NSString stringWithFormat:@"%@-%@-%@",yearArray[yearIndex],monthArray[monthIndex],dayArray[dayIndex]]];
-    if (self.datePickerStyle == UUDateStyle_TimeQuantum&&[strWeek isEqualToString:@"星期天"]) {
-        NSArray *array = [self getNowDate:self.minLimitDate];
-        for (int i=0; i<array.count; i++) {
-            [myPickerView selectRow:[array[i] integerValue] inComponent:i animated:YES];
+    
+    int weekIndex =[self formateStrToWeekIndex:[NSString stringWithFormat:@"%@-%@-%@",yearArray[yearIndex],monthArray[monthIndex],dayArray[dayIndex]]];
+    if(!_isAccompany&&!_isChildren &&self.datePickerStyle == UUDateStyle_TimeQuantum&&![self isHospitalOpen:weekIndex]){
+//        [self makeToast:@"该时段医院未开放挂号！" duration:1.0 position:CSToastPositionCenter style:nil];
+//        NSLog(@"该时段医院未开放挂号！");
+        return;
+    }
+    
+    if(_isAccompany&&self.datePickerStyle == UUDateStyle_TimeQuantum){
+        NSString * timeStr =[NSString stringWithFormat:@"%@%@%@%@",yearArray[yearIndex],monthArray[monthIndex],dayArray[dayIndex],timePeriodArray[periodIndex]];
+        NSDate *date = [self date2FromString:timeStr withFormat:@"yyyyMMddHH:mm"];
+        NSDate *date2 = [[NSDate date]dateByAddingTimeInterval:1800];;
+        if ([date compare:date2] == NSOrderedAscending) {
+            NSArray *array = [self getNowDate:nil];
+            for (int i=0; i<array.count; i++) {
+                [myPickerView selectRow:[array[i] integerValue] inComponent:i animated:YES];
+            }
         }
     }
+    
+    if(_isChildren&&self.datePickerStyle == UUDateStyle_TimeQuantum){
+        NSMutableArray * times = [NSMutableArray arrayWithObjects:@"16",@"17",@"18",@"19",@"20",@"21",@"22",@"23", nil];
+        NSString * timeStr =[NSString stringWithFormat:@"%@%@%@%@",yearArray[yearIndex],monthArray[monthIndex],dayArray[dayIndex],times[periodIndex]];
+        NSDate *date = [self date2FromString:timeStr withFormat:@"yyyyMMddHH"];
+        NSDate *date2 = [[NSDate date]dateByAddingTimeInterval:1800];;
+        if ([date compare:date2] == NSOrderedAscending) {
+            NSArray *array = [self getNowDate:nil];
+            for (int i=0; i<array.count; i++) {
+                [myPickerView selectRow:[array[i] integerValue] inComponent:i animated:YES];
+            }
+        }
+    }
+
+//    if (self.datePickerStyle == UUDateStyle_TimeQuantum&&_isAdult&&[strWeek isEqualToString:@"星期六"]) {
+//        NSArray *array = [self getNowDate:self.minLimitDate];
+//        for (int i=0; i<array.count; i++) {
+//            [myPickerView selectRow:[array[i] integerValue] inComponent:i animated:YES];
+//        }
+//        [self performSelector:@selector(delayMethod) withObject:nil afterDelay:0.2f];
+//    }
+//
+//    if (self.datePickerStyle == UUDateStyle_TimeQuantum&&[strWeek isEqualToString:@"星期天"]) {
+//        NSArray *array = [self getNowDate:self.minLimitDate];
+//        for (int i=0; i<array.count; i++) {
+//            [myPickerView selectRow:[array[i] integerValue] inComponent:i animated:YES];
+//        }
+//        [self performSelector:@selector(delayMethod) withObject:nil afterDelay:0.2f];
+//    }
     NSString *strWeekDay = [self getWeekDayWithYear:yearArray[yearIndex] month:monthArray[monthIndex] day:dayArray[dayIndex]];
     if (self.datePickerStyle == UUDateStyle_TimeQuantum) {
         strWeekDay = timePeriodArray[periodIndex];
@@ -723,6 +952,49 @@
                         weekDay:strWeekDay];
 }
 
+-(int) formateStrToWeekIndex:(NSString *) time
+{
+    if(time==nil)return 1;
+    NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+    [formatter setTimeStyle:NSDateFormatterShortStyle];
+    [formatter setDateFormat:@"yyyy-MM-dd"];
+    NSDate * date = [formatter dateFromString:time];
+    
+    NSArray *weekdays = [[NSArray alloc] initWithObjects:[NSNull class],@"7", @"1",  @"2", @"3",  @"4", @"5",  @"6", nil];  ;
+    NSCalendar *calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
+    NSTimeZone *timeZone = [[NSTimeZone alloc] initWithName:@"Asia/Shanghai"];
+    [calendar setTimeZone: timeZone];
+    
+    NSCalendarUnit calendarUnit = NSCalendarUnitWeekday;
+    NSDateComponents *theComponents = [calendar components:calendarUnit fromDate:date];
+    NSString * numStr = [weekdays objectAtIndex:theComponents.weekday];
+    return numStr.intValue;
+}
+
+-(BOOL)isHospitalOpen:(int) week
+{
+    if(_openDays&&_openDays.length ==7){
+        NSString * day = [_openDays substringWithRange:NSMakeRange(week-1, 1)];
+        if(day.intValue == 0){
+            return NO;
+        }
+        if(day.intValue == 1){
+            return YES;
+        }
+        if(day.intValue == 2&&periodIndex<4){
+            return YES;
+        }
+        if(day.intValue == 3&&periodIndex>3){
+            return YES;
+        }
+        return NO;
+    }
+    return NO;
+}
+
+-(void)delayMethod{
+    [self drawRect:CGRectMake(0, 0, [[UIScreen mainScreen] bounds].size.width, 200)];
+}
 
 #pragma mark - 数据处理
 //通过日期求星期
@@ -752,6 +1024,13 @@
 
 //根据string返回date
 - (NSDate *)dateFromString:(NSString *)string withFormat:(NSString *)format {
+    NSDateFormatter *inputFormatter = [[NSDateFormatter alloc] init];
+    [inputFormatter setDateFormat:format];
+    NSDate *date = [inputFormatter dateFromString:string];
+    return date;
+}
+
+- (NSDate *)date2FromString:(NSString *)string withFormat:(NSString *)format {
     NSDateFormatter *inputFormatter = [[NSDateFormatter alloc] init];
     [inputFormatter setDateFormat:format];
     NSDate *date = [inputFormatter dateFromString:string];
@@ -858,39 +1137,91 @@
 
 - (UIColor *)returnPeriodColorRow:(NSInteger)row
 {
-    NSString *strWeekDay =[Utils formateStrToWeek:[NSString stringWithFormat:@"%@-%@-%@",yearArray[yearIndex],monthArray[monthIndex],dayArray[dayIndex]]];
-    if ([strWeekDay isEqualToString:@"星期天"]) {
-        return UU_GRAY;
-    }else{
-        if (isPeriodMore) {
-            return UU_BLACK;
-        }
-        if(curPeriodIndex==0&&row < 0){
-           return UU_GRAY;
-        }
-        if(curPeriodIndex==1&&row < 1){
-            return UU_GRAY;
-        }
-        if(curPeriodIndex==2&&row<2){
-            return UU_GRAY;
-        }
-        if(curPeriodIndex==3&&row<3){
-            return UU_GRAY;
-        }
-        if(curPeriodIndex==4&&row<4){
-            return UU_GRAY;
-        }
-        if(curPeriodIndex==5&&row<5){
-            return UU_GRAY;
-        }
-        if(curPeriodIndex==6&&row<6){
-            return UU_GRAY;
-        }
-        if(curPeriodIndex==7&&row<7){
-            return UU_GRAY;
-        }
+//    NSString *strWeekDay =[Utils formateStrToWeek:[NSString stringWithFormat:@"%@-%@-%@",yearArray[yearIndex],monthArray[monthIndex],dayArray[dayIndex]]];
+//    if(_isAdult&&[strWeekDay isEqualToString:@"星期六"]){
+//        return UU_GRAY;
+//    }else if ([strWeekDay isEqualToString:@"星期天"]) {
+//        return UU_GRAY;
+//    }else{
+//
+//    }
+    
+    if (isPeriodMore) {
         return UU_BLACK;
     }
+    if(curPeriodIndex==0&&row < 0){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==1&&row < 1){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==2&&row<2){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==3&&row<3){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==4&&row<4){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==5&&row<5){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==6&&row<6){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==7&&row<7){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==8&&row<8){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==9&&row<9){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==10&&row<10){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==11&&row<11){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==12&&row<12){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==13&&row<13){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==14&&row<14){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==15&&row<15){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==16&&row<16){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==17&&row<17){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==18&&row<18){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==19&&row<19){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==20&&row<20){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==21&&row<21){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==22&&row<22){
+        return UU_GRAY;
+    }
+    if(curPeriodIndex==23&&row<23){
+        return UU_GRAY;
+    }
+    return UU_BLACK;
 }
 
 - (UIColor *)returnDayColorRow:(NSInteger)row

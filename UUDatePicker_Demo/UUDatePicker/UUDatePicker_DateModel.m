@@ -2,8 +2,8 @@
 //  UUDatePicker_DateModel.m
 //  text_datepicker
 //
-//  Created by qiye on 16/5/9.
-//  Copyright © 2016年 qiye. All rights reserved.
+//  Created by shake on 14-9-17.
+//  Copyright (c) 2014年 uyiuyao. All rights reserved.
 //
 
 #import "UUDatePicker_DateModel.h"

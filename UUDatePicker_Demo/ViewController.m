@@ -17,6 +17,16 @@
 
 @implementation ViewController
 
+
+
+//
+//
+//   特别注意，本demo里频繁调用了 NSDateFormatter ，应该做个单例，而不是频繁创建，如果要用还请自觉优化！  另外里面有好几种算法 写的有点烂
+//   有时间改改。
+//
+//
+
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.

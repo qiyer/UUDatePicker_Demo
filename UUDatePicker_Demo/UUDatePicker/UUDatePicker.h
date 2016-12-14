@@ -2,11 +2,12 @@
 //  UUDatePicker.h
 //  Yang
 //
-//  Created by qiye on 16/5/9.
-//  Copyright © 2016年 qiye. All rights reserved.
+//  Created by shake on 14-7-24.
+//  Copyright (c) 2014年 uyiuyao. All rights reserved.
 //
 
 #import <UIKit/UIKit.h>
+#import "CustomUIActionSheet.h"
 @class UUDatePicker;
 
 typedef enum{
@@ -41,7 +42,7 @@ typedef void (^FinishBlock)(NSString * year,
 
 
 @interface UUDatePicker : UIView<UIPickerViewDelegate,UIPickerViewDataSource>
-
+@property(nonatomic,assign)BOOL isAccompany;
 @property (nonatomic, assign) id <UUDatePickerDelegate> delegate;
 
 @property (nonatomic, assign) DateStyle datePickerStyle;
@@ -49,10 +50,14 @@ typedef void (^FinishBlock)(NSString * year,
 @property (nonatomic, retain) NSDate *ScrollToDate;//滚到指定日期
 @property (nonatomic, retain) NSDate *maxLimitDate;//限制最大时间（没有设置默认2049）
 @property (nonatomic, retain) NSDate *minLimitDate;//限制最小时间（没有设置默认1970）
+@property (nonatomic, retain) NSString* openDays;//专家号周排班安排 比如 1112300 0表示不开放 1表示开放全天  2表示开放上午 3表示开放下午
+@property  BOOL isAdult;//是否是成人
+@property (nonatomic) BOOL isChildren;
+@property(nonatomic) CustomUIActionSheet * sheet;
 
 - (NSDate *)dateFromString:(NSString *)string withFormat:(NSString *)format;
 - (id)initWithframe:(CGRect)frame Delegate:(id<UUDatePickerDelegate>)delegate PickerStyle:(DateStyle)uuDateStyle;
 - (id)initWithframe:(CGRect)frame PickerStyle:(DateStyle)uuDateStyle didSelected:(FinishBlock)finishBlock;
 - (void)getFirstDate;
-
+- (void)drawRect:(CGRect)rect;
 @end
