@@ -16,10 +16,10 @@
 ##项目中效果:
  <img src="https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4619.PNG" width = "375" height = "600" alt="图片名称" align=center />
 
-![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4620.PNG)
+ <img src="https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4620.PNG" width = "375" height = "600" alt="图片名称" align=center />
+ 
+  <img src="https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4621.PNG" width = "375" height = "600" alt="图片名称" align=center />
 
-
-![image](https://github.com/qiyer/UUDatePicker_Demo/blob/master/IMG_4621.PNG)
 
 ##联系交流：
 [![Join the chat at http://www.cnblogs.com/qiyer/](https://github.com/qiyer/UUDatePicker_Demo/blob/master/博客园.png)](http://www.cnblogs.com/qiyer/)[![Join the chat at http://bbs.9ria.com/space-uid-106435.html](https://github.com/qiyer/UUDatePicker_Demo/blob/master/天地会.png)](http://bbs.9ria.com/space-uid-106435.html)
